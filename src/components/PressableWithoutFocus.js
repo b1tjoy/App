@@ -1,6 +1,7 @@
 import React from 'react';
-import {Pressable} from 'react-native';
+import {View} from 'react-native';
 import PropTypes from 'prop-types';
+import {State, TapGestureHandler} from 'react-native-gesture-handler';
 
 const propTypes = {
     /** Element that should be clickable  */
@@ -33,16 +34,21 @@ class PressableWithoutFocus extends React.Component {
         this.pressAndBlur = this.pressAndBlur.bind(this);
     }
 
-    pressAndBlur() {
+    pressAndBlur(event) {
+        if (event.nativeEvent.state !== State.ACTIVE) {
+            return;
+        }
         this.pressableRef.blur();
         this.props.onPress();
     }
 
     render() {
         return (
-            <Pressable onPress={this.pressAndBlur} ref={el => this.pressableRef = el} style={this.props.styles}>
-                {this.props.children}
-            </Pressable>
+            <TapGestureHandler onHandlerStateChange={this.pressAndBlur}>
+                <View ref={el => this.pressableRef = el} style={this.props.styles}>
+                    {this.props.children}
+                </View>
+            </TapGestureHandler>
         );
     }
 }
