@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {ScrollView} from 'react-native';
-import styles from '../styles/styles';
+import styles from '../../styles/styles';
 
 const propTypes = {
     /** Form elements */
