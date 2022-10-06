@@ -33,6 +33,7 @@ import * as ReportUtils from '../../../libs/ReportUtils';
 import OfflineWithFeedback from '../../../components/OfflineWithFeedback';
 import * as ReportActions from '../../../libs/actions/ReportActions';
 import reportPropTypes from '../../reportPropTypes';
+import {ShowPopoverContextProvider} from '../../../components/ShowPopoverContext';
 
 const propTypes = {
     /** Report for this action */
@@ -101,18 +102,20 @@ class ReportActionItem extends Component {
      * Show the ReportActionContextMenu modal popover.
      *
      * @param {Object} [event] - A press event.
+     * @param {String} [type] - Report type.
+     * @param {String} [selection] - User selection string.
+     * @param {Object} [anchor] - Anchor node.
      */
-    showPopover(event) {
+    showPopover(event, type, selection, anchor) {
         // Block menu on the message being Edited
         if (this.props.draftMessage) {
             return;
         }
-        const selection = SelectionScraper.getCurrentSelection();
         ReportActionContextMenu.showContextMenu(
-            ContextMenuActions.CONTEXT_MENU_TYPES.REPORT_ACTION,
+            type || ContextMenuActions.CONTEXT_MENU_TYPES.REPORT_ACTION,
             event,
-            selection,
-            this.popoverAnchor,
+            selection || SelectionScraper.getCurrentSelection(),
+            anchor || this.popoverAnchor,
             this.props.report.reportID,
             this.props.action,
             this.props.draftMessage,
@@ -143,23 +146,27 @@ class ReportActionItem extends Component {
                 />
             );
         } else {
-            children = !this.props.draftMessage
-                ? (
-                    <ReportActionItemMessage action={this.props.action} />
-                ) : (
-                    <ReportActionItemMessageEdit
-                        action={this.props.action}
-                        draftMessage={this.props.draftMessage}
-                        reportID={this.props.report.reportID}
-                        index={this.props.index}
-                        ref={el => this.textInput = el}
-                        report={this.props.report}
-                        shouldDisableEmojiPicker={
-                            (ReportUtils.chatIncludesConcierge(this.props.report) && User.isBlockedFromConcierge(this.props.blockedFromConcierge))
-                            || ReportUtils.isArchivedRoom(this.props.report)
-                        }
-                    />
-                );
+            children = (
+                <ShowPopoverContextProvider value={{showPopover: this.showPopover}}>
+                    {!this.props.draftMessage
+                        ? (
+                            <ReportActionItemMessage action={this.props.action} />
+                        ) : (
+                            <ReportActionItemMessageEdit
+                                action={this.props.action}
+                                draftMessage={this.props.draftMessage}
+                                reportID={this.props.report.reportID}
+                                index={this.props.index}
+                                ref={el => this.textInput = el}
+                                report={this.props.report}
+                                shouldDisableEmojiPicker={
+                                    (ReportUtils.chatIncludesConcierge(this.props.report) && User.isBlockedFromConcierge(this.props.blockedFromConcierge))
+                                    || ReportUtils.isArchivedRoom(this.props.report)
+                                }
+                            />
+                        )}
+                </ShowPopoverContextProvider>
+            );
         }
         return (
             <PressableWithSecondaryInteraction

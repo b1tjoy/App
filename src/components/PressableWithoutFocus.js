@@ -12,6 +12,15 @@ const propTypes = {
     /** Callback for onPress event */
     onPress: PropTypes.func.isRequired,
 
+    /** Callback for onPressIn event */
+    onPressIn: PropTypes.func,
+
+    /** Callback for onLongPress event */
+    onLongPress: PropTypes.func,
+
+    /** Callback for onPressOut event */
+    onPressOut: PropTypes.func,
+
     /** Styles that should be passed to touchable container */
     // eslint-disable-next-line react/forbid-prop-types
     styles: PropTypes.arrayOf(PropTypes.object),
@@ -19,6 +28,9 @@ const propTypes = {
 
 const defaultProps = {
     styles: [],
+    onPressIn: undefined,
+    onLongPress: undefined,
+    onPressOut: undefined,
 };
 
 /**
@@ -41,7 +53,14 @@ class PressableWithoutFocus extends React.Component {
 
     render() {
         return (
-            <Pressable onPress={this.pressAndBlur} ref={el => this.pressableRef = el} style={this.props.styles}>
+            <Pressable
+                onPress={this.pressAndBlur}
+                onPressIn={this.props.onPressIn}
+                onLongPress={this.props.onLongPress}
+                onPressOut={this.props.onPressOut}
+                ref={el => this.pressableRef = el}
+                style={this.props.styles}
+            >
                 {this.props.children}
             </Pressable>
         );

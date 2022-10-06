@@ -6,6 +6,15 @@ import styles from '../../../styles/styles';
 import ThumbnailImage from '../../ThumbnailImage';
 import PressableWithoutFocus from '../../PressableWithoutFocus';
 import CONST from '../../../CONST';
+import canUseTouchScreen from '../../../libs/canUseTouchscreen';
+import ControlSelection from '../../../libs/ControlSelection';
+import withWindowDimensions, {windowDimensionsPropTypes} from '../../withWindowDimensions';
+import {ShowPopoverContextConsumer} from '../../ShowPopoverContext';
+
+const propTypes = {
+    ...htmlRendererPropTypes,
+    ...windowDimensionsPropTypes,
+};
 
 const ImageRenderer = (props) => {
     const htmlAttribs = props.tnode.attributes;
@@ -57,31 +66,38 @@ const ImageRenderer = (props) => {
             imageHeight={imageHeight}
         />
     ) : (
-        <AttachmentModal
-            allowDownload
-            sourceURL={source}
-            isAuthTokenRequired={isAttachment}
-            originalFileName={originalFileName}
-        >
-            {({show}) => (
-                <PressableWithoutFocus
-                    style={styles.noOutline}
-                    onPress={show}
+        <ShowPopoverContextConsumer>
+            {({showPopover}) => (
+                <AttachmentModal
+                    allowDownload
+                    sourceURL={source}
+                    isAuthTokenRequired={isAttachment}
+                    originalFileName={originalFileName}
                 >
-                    <ThumbnailImage
-                        previewSourceURL={previewSource}
-                        style={styles.webViewStyles.tagStyles.img}
-                        isAuthTokenRequired={isAttachment}
-                        imageWidth={imageWidth}
-                        imageHeight={imageHeight}
-                    />
-                </PressableWithoutFocus>
+                    {({show}) => (
+                        <PressableWithoutFocus
+                            style={styles.noOutline}
+                            onPress={show}
+                            onPressIn={() => props.isSmallScreenWidth && canUseTouchScreen() && ControlSelection.block()}
+                            onPressOut={() => ControlSelection.unblock()}
+                            onLongPress={showPopover}
+                        >
+                            <ThumbnailImage
+                                previewSourceURL={previewSource}
+                                style={styles.webViewStyles.tagStyles.img}
+                                isAuthTokenRequired={isAttachment}
+                                imageWidth={imageWidth}
+                                imageHeight={imageHeight}
+                            />
+                        </PressableWithoutFocus>
+                    )}
+                </AttachmentModal>
             )}
-        </AttachmentModal>
+        </ShowPopoverContextConsumer>
     );
 };
 
-ImageRenderer.propTypes = htmlRendererPropTypes;
+ImageRenderer.propTypes = propTypes;
 ImageRenderer.displayName = 'ImageRenderer';
 
-export default ImageRenderer;
+export default withWindowDimensions(ImageRenderer);
